@@ -52,7 +52,7 @@ services:
       - kong
     volumes:
       - ./examples:/etc/kongfig/:ro
-    command: ["kongfig", "-f", "/etc/kong-init/config.example.json"]
+    command: ["apply", "-f", "/etc/kong-init/config.example.json"]
     environment:
       - POD_NAMESPACE=dev
       - DOMAIN_NAME=pager.com
