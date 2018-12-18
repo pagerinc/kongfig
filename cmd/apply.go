@@ -32,8 +32,8 @@ var applyCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		client.UpdateAllRecursively()
+		err = client.UpdateAllRecursively()
 
-		return nil
+		return err
 	},
 }

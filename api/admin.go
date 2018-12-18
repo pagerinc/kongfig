@@ -56,13 +56,19 @@ func adminURL(c *Config) string {
 	return fmt.Sprintf("%s://%s", protocol, c.Host)
 }
 
-func (c *Client) UpdateAllRecursively() {
+func (c *Client) UpdateAllRecursively() error {
 	for _, s := range c.config.Services {
-		// FIXME err check
-		c.UpdateService(s)
-		c.DeleteRoutes(s)
-		c.CreateRoutes(s)
+		if err := c.UpdateService(s); err != nil {
+			return err
+		}
+		if err := c.DeleteRoutes(s); err != nil {
+			return err
+		}
+		if err := c.CreateRoutes(s); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (c *Client) UpdateService(s Service) error {
