@@ -21,6 +21,7 @@ type Service struct {
 	URL            string  `json:"url,omitempty"`
 	WriteTimeout   int     `json:"write_timeout,omitempty"`
 	Routes         []Route `json:"routes,omitempty"`
+	Plugin         Plugin  `json:"plugin,omitempty"`
 }
 
 type Routes struct {
