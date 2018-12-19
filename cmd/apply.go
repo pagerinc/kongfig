@@ -12,7 +12,7 @@ var (
 
 func init() {
 	const (
-		defaultConfig = "config.json"
+		defaultConfig = "config.yaml"
 		configUsage   = "Filename that contains the configuration to apply"
 		defaultDryRun = false
 		dryRunUsage   = "simulate an install"
@@ -29,11 +29,12 @@ var applyCmd = &cobra.Command{
 	Long:  `Use apply to restore your settings into an existing Kong instance.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := api.NewClient(fileVar)
+
 		if err != nil {
 			return err
 		}
-		err = client.UpdateAllRecursively()
 
+		err = client.UpdateAllRecursively()
 		return err
 	},
 }
