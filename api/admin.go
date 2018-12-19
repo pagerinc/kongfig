@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -15,14 +17,17 @@ const (
 	applicationJSON string = "application/json; charset=utf-8"
 )
 
+// Client represents the public API
 type Client struct {
 	config  *Config
 	client  *http.Client
 	BaseURL string
 }
 
+// NewClient returns a Client object with the parsed configuration
 func NewClient(filePath string) (*Client, error) {
 	config, err := configFromPath(filePath)
+
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +49,12 @@ func configFromPath(path string) (*Config, error) {
 	defer file.Close()
 
 	c := Config{}
-	json.NewDecoder(file).Decode(&c)
+	err = yaml.NewDecoder(file).Decode(&c)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &c, nil
 }
 
@@ -56,6 +66,7 @@ func adminURL(c *Config) string {
 	return fmt.Sprintf("%s://%s", protocol, c.Host)
 }
 
+// UpdateAllRecursively iterates through all services and updates config, deletes and recreates routes
 func (c *Client) UpdateAllRecursively() error {
 	for _, s := range c.config.Services {
 		if err := c.UpdateService(s); err != nil {
@@ -71,13 +82,18 @@ func (c *Client) UpdateAllRecursively() error {
 	return nil
 }
 
+// UpdateService updates a service's configuration in Kong
 func (c *Client) UpdateService(s Service) error {
 	url := fmt.Sprintf("%s/services/%s", c.BaseURL, s.Name)
+
 	s.Routes = nil
+
 	payload, err := json.Marshal(s)
+
 	if err != nil {
 		return err
 	}
+
 	res, err := c.httpRequest(http.MethodPut, url, payload, nil)
 	if err != nil {
 		return err
@@ -91,6 +107,7 @@ func (c *Client) UpdateService(s Service) error {
 	return nil
 }
 
+// DeleteRoutes iterates through the routes slice and deletes each one
 func (c *Client) DeleteRoutes(s Service) error {
 	routes, err := c.GetRoutes(s)
 	if err != nil {
@@ -108,6 +125,7 @@ func (c *Client) DeleteRoutes(s Service) error {
 	return nil
 }
 
+//
 func (c *Client) DeleteRoute(r Route) error {
 	url := fmt.Sprintf("%s/routes/%s", c.BaseURL, r.ID)
 	res, err := c.httpRequest(http.MethodDelete, url, nil, nil)
