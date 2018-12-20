@@ -18,6 +18,7 @@ Find more information at https://github.com/pagerinc/kongfig`,
 	},
 }
 
+// Execute runs the konfig cli
 func Execute() {
 	if err := kongfig.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
