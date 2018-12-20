@@ -1,29 +1,29 @@
 host: localhost:8001
-https: true
+https: false
 version: "0.14.1"
 services:
   - name: api-admin
-    url: 'http://${POD_NAMESPACE}api-admin.${SVC_DOMAIN}'
+    url: http://${POD_NAMESPACE}.api-admin.${SVC_DOMAIN}
   - name: api-command-center
-    url: http://${POD_NAMESPACE}api-command-center.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-command-center.${SVC_DOMAIN}
   - name: api-config
-    url: http://${POD_NAMESPACE}api-config.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-config.${SVC_DOMAIN}
   - name: api-core
-    url: http://${POD_NAMESPACE}api-core.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-core.${SVC_DOMAIN}
   - name: api-horizon
-    url: http://${POD_NAMESPACE}api-horizon.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-horizon.${SVC_DOMAIN}
   - name: api-messages
-    url: http://${POD_NAMESPACE}api-messages.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-messages.${SVC_DOMAIN}
   - name: api-providers
-    url: http://${POD_NAMESPACE}api-providers.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-providers.${SVC_DOMAIN}
   - name: api-scheduling
-    url: http://${POD_NAMESPACE}api-scheduling.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-scheduling.${SVC_DOMAIN}
   - name: api-sdk
-    url: http://${POD_NAMESPACE}api-sdk.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-sdk.${SVC_DOMAIN}
   - name: api-twilio
-    url: http://${POD_NAMESPACE}api-twilio.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.api-twilio.${SVC_DOMAIN}
   - name: stash
-    url: http://${POD_NAMESPACE}stash.${SVC_DOMAIN}
+    url: http://${POD_NAMESPACE}.stash.${SVC_DOMAIN}
 
 # routes:
 #   - name: api-admin-private

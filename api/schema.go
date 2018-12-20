@@ -14,15 +14,15 @@ type Config struct {
 
 // Service represents the upstream microservice
 type Service struct {
-	Name           string `yaml:"name,omitempty"`
-	URL            string `yaml:"url,omitempty"`
-	Host           string `yaml:"host,omitempty"`
-	Path           string `yaml:"path,omitempty"`
-	Port           int    `yaml:"port,omitempty"`
-	ConnectTimeout int    `yaml:"connect_timeout,omitempty"`
-	WriteTimeout   int    `yaml:"write_timeout,omitempty"`
-	ReadTimeout    int    `yaml:"read_timeout,omitempty"`
-	Retries        int    `yaml:"retries,omitempty"`
+	Name           string `yaml:"name,omitempty" json:"name,omitempty"`
+	URL            string `yaml:"url,omitempty" json:"url,omitempty"`
+	Host           string `yaml:"host,omitempty" json:"host,omitempty"`
+	Path           string `yaml:"path,omitempty" json:"path,omitempty"`
+	Port           int    `yaml:"port,omitempty" json:"port,omitempty"`
+	ConnectTimeout int    `yaml:"connect_timeout,omitempty" json:"connect_timeout,omitempty"`
+	WriteTimeout   int    `yaml:"write_timeout,omitempty" json:"write_timeout,omitempty"`
+	ReadTimeout    int    `yaml:"read_timeout,omitempty" json:"read_timeout,omitempty"`
+	Retries        int    `yaml:"retries,omitempty" json:"retries,omitempty"`
 }
 
 // Route represents routes for each microservice
