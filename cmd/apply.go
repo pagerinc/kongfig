@@ -34,7 +34,7 @@ var applyCmd = &cobra.Command{
 			return err
 		}
 
-		err = client.UpdateAllRecursively()
+		err = client.ApplyConfig()
 		return err
 	},
 }

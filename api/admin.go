@@ -63,6 +63,7 @@ func NewClient(filePath string) (*Client, error) {
 	return c, nil
 }
 
+// configFromPath parses the YAML file specified in the path param
 func configFromPath(path string) (*Config, error) {
 	configData, err := ioutil.ReadFile(path)
 
@@ -89,6 +90,25 @@ func adminURL(c *Config) string {
 	return fmt.Sprintf("%s://%s", protocol, c.Host)
 }
 
+// ApplyConfig iterates through all services and updates config, deletes and recreates routes
+func (c *Client) ApplyConfig() error {
+	for _, s := range c.config.Services {
+		if err := c.UpdateService(s); err != nil {
+			return err
+		}
+
+		if err := c.DeleteRoutes(s); err != nil {
+			return err
+		}
+
+		if err := c.CreateRoutes(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // UpdateService updates an existing service or creates a new one if it doesn't exist
 // Makes a HTTP PUT to the KONG ADMIN API
 func (c *Client) UpdateService(s Service) error {
@@ -109,126 +129,96 @@ func (c *Client) UpdateService(s Service) error {
 		return err
 	}
 
-	if res.StatusCode == 200 {
-		fmt.Printf("Successfully updated service: %s \n", s.Name)
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("[HTTP %d] Error updating service. Bad response from the API", res.StatusCode)
 	}
+
+	fmt.Printf("[HTTP %d] Successfully created/updated service: %s \n", http.StatusOK, s.Name)
 
 	return nil
 }
 
-// UpdateAllRecursively iterates through all services and updates config, deletes and recreates routes
-func (c *Client) UpdateAllRecursively() error {
-	for _, s := range c.config.Services {
-		if err := c.UpdateService(s); err != nil {
+// CreateRoutes iterates through all available routes and creates for the associated service
+func (c *Client) CreateRoutes() error {
+	for _, r := range c.config.Routes {
+		url := fmt.Sprintf("%s/services/%s/routes", c.BaseURL, r.Service)
+
+		payload, err := json.Marshal(r)
+
+		if err != nil {
 			return err
 		}
-		// if err := c.DeleteRoutes(s); err != nil {
-		// 	return err
-		// }
-		// if err := c.CreateRoutes(s); err != nil {
-		// 	return err
-		// }
+
+		res, err := c.httpRequest(http.MethodPost, url, payload, nil)
+
+		if err != nil {
+			return err
+		}
+
+		if res.StatusCode != http.StatusCreated {
+			return fmt.Errorf("[HTTP %d] Error creating routes. Bad response from Kong API", res.StatusCode)
+		}
+
+		fmt.Printf("[HTTP %d] Route created for service %s \n", res.StatusCode, r.Service)
 	}
 
 	return nil
 }
 
-// // UpdateService updates a service's configuration in Kong
-// func (c *Client) UpdateService(s Service) error {
-// 	url := fmt.Sprintf("%s/services/%s", c.BaseURL, s.Name)
+// GetRoutes fetches all routes from Kong for the specified service
+func (c *Client) GetRoutes(s Service) ([]Route, error) {
+	url := fmt.Sprintf("%s/services/%s/routes", c.BaseURL, s.Name)
+	r := Routes{}
 
-// 	s.Routes = nil
+	res, err := c.httpRequest(http.MethodGet, url, nil, &r)
 
-// 	payload, err := json.Marshal(s)
+	if err != nil {
+		return r.Data, err
+	}
 
-// 	if err != nil {
-// 		return err
-// 	}
+	if res.StatusCode != http.StatusOK {
+		return r.Data, fmt.Errorf("[HTTP %d] Error fetching routes. Bad response response from the API", res.StatusCode)
+	}
 
-// 	res, err := c.httpRequest(http.MethodPut, url, payload, nil)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if res.StatusCode != http.StatusOK {
-// 		return fmt.Errorf("error updating service. Bad response from the API [%d]", res.StatusCode)
-// 	}
+	return r.Data, nil
+}
 
-// 	log.Printf("service [%s] created (%d)", s.Name, res.StatusCode)
+// DeleteRoutes iterates through all routes and deletes each one
+func (c *Client) DeleteRoutes(s Service) error {
+	routes, err := c.GetRoutes(s)
 
-// 	return nil
-// }
+	if err != nil {
+		return err
+	}
 
-// // DeleteRoutes iterates through the routes slice and deletes each one
-// func (c *Client) DeleteRoutes(s Service) error {
-// 	routes, err := c.GetRoutes(s)
-// 	if err != nil {
-// 		return err
-// 	}
+	for _, r := range routes {
+		if err := c.DeleteRoute(r); err != nil {
+			return err
+		}
+	}
 
-// 	log.Printf("service [%s] - [%d] routes", s.Name, len(routes))
+	return nil
+}
 
-// 	for _, r := range routes {
-// 		if err := c.DeleteRoute(r); err != nil {
-// 			return err
-// 		}
-// 	}
+// DeleteRoute deletes a route for a service based on route id
+func (c *Client) DeleteRoute(r Route) error {
+	url := fmt.Sprintf("%s/routes/%s", c.BaseURL, r.ID)
+	res, err := c.httpRequest(http.MethodDelete, url, nil, nil)
 
-// 	return nil
-// }
+	if err != nil {
+		return err
+	}
 
-// //
-// func (c *Client) DeleteRoute(r Route) error {
-// 	url := fmt.Sprintf("%s/routes/%s", c.BaseURL, r.ID)
-// 	res, err := c.httpRequest(http.MethodDelete, url, nil, nil)
-// 	if err != nil {
-// 		return err
-// 	}
+	if res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("[HTTP %d] Error deleting route. Bad response response from the API", res.StatusCode)
+	}
 
-// 	if res.StatusCode != http.StatusNoContent {
-// 		return fmt.Errorf("error deleting route. Bad response response from the API [%d]", res.StatusCode)
-// 	}
+	fmt.Printf("[HTTP %d] Route [%s] deleted \n", res.StatusCode, r.ID)
 
-// 	log.Printf("route [%s] deleted (%d)", r.ID, res.StatusCode)
+	return nil
+}
 
-// 	return nil
-// }
-
-// func (c *Client) GetRoutes(s Service) ([]Route, error) {
-// 	url := fmt.Sprintf("%s/services/%s/routes", c.BaseURL, s.Name)
-// 	r := Routes{}
-// 	res, err := c.httpRequest(http.MethodGet, url, nil, &r)
-// 	if err != nil {
-// 		return r.Data, err
-// 	}
-
-// 	if res.StatusCode != http.StatusOK {
-// 		return r.Data, fmt.Errorf("error fetching routes. Bad response response from the API [%d]", res.StatusCode)
-// 	}
-
-// 	return r.Data, nil
-// }
-
-// func (c *Client) CreateRoutes(s Service) error {
-// 	url := fmt.Sprintf("%s/services/%s/routes", c.BaseURL, s.Name)
-
-// 	for _, r := range s.Routes {
-// 		payload, err := json.Marshal(r)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		res, err := c.httpRequest(http.MethodPost, url, payload, nil)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		if res.StatusCode != http.StatusCreated {
-// 			return fmt.Errorf("error creating routes. Bad response response from the API [%d]", res.StatusCode)
-// 		}
-// 	}
-
-// 	log.Printf("routes created [%s]", s.Name)
-// 	return nil
-// }
-
+// Commenting out for now. A future version of the Plugins feature will replace this:
 // func (c *Client) CreatePlugin(s Service) error {
 // 	url := fmt.Sprintf("%s/services/%s/plugins", c.BaseURL, s.Name)
 
