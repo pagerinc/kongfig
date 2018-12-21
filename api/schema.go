@@ -27,17 +27,20 @@ type Service struct {
 
 // Route represents routes for each microservice
 type Route struct {
-	Name    string      `yaml:"name"`
-	ApplyTo string      `yaml:"apply_to,omitempty"`
-	Config  RouteConfig `yaml:"config,omitempty"`
+	ID            string   `yaml:"id,omitempty" json:"id,omitempty"`
+	Service       string   `yaml:"service,omitempty" json:"service,omitempty"`
+	Hosts         []string `yaml:"hosts,omitempty" json:"hosts,omitempty"`
+	Paths         []string `yaml:"paths,omitempty" json:"paths,omitempty"`
+	Methods       []string `yaml:"methods,omitempty" json:"methods,omitempty"`
+	StripPath     bool     `yaml:"strip_path,omitempty" json:"strip_path,omitempty"`
+	Protocols     []string `yaml:"protocols,omitempty" json:"protocols,omitempty"`
+	RegexPriority int      `yaml:"regex_priority,omitempty" json:"regex_priority,omitempty"`
+	PreserveHost  bool     `yaml:"preserve_host,omitempty" json:"preserve_host,omitempty"`
 }
 
-// RouteConfig represents the config property in Route struct
-type RouteConfig struct {
-	Hosts     []string `yaml:"hosts"`
-	Methods   []string `yaml:"methods,omitempty"`
-	Paths     []string `yaml:"paths,omitempty"`
-	StripPath bool     `yaml:"strip_path,omitempty"`
+type Routes struct {
+	Next string  `yaml:"next,omitempty" json:"next,omitempty"`
+	Data []Route `yaml:"data,omitempty" json:"data,omitempty"`
 }
 
 // Consumer represents the user credential for authentication to Kong

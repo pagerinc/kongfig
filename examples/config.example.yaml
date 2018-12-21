@@ -25,178 +25,125 @@ services:
   - name: stash
     url: http://${POD_NAMESPACE}.stash.${SVC_DOMAIN}
 
-# routes:
-#   - name: api-admin-private
-#     apply_to: api-admin
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-admin.${DOMAIN_NAME}']
-#   - name: api-admin-public
-#     apply_to: api-admin
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-admin.${DOMAIN_NAME}']
-#       methods: ["POST"]
-#       paths: ["/auth"]
-#       strip_path: false
-#   - name: api-command-center-private
-#     apply_to: api-command-center
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}']
-#   - name: api-command-center-public
-#     apply_to: api-command-center
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}']
-#       methods: ["POST"]
-#       paths: ["/auth"]
-#       strip_path: false
-#   - name: api-core-config
-#     apply_to: api-config
-#     config:
-#       hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["GET"]
-#       paths: ["/config"]
-#       strip_path: true
-#   - name: api-config-public
-#     apply_to: api-config
-#     config:
-#       hosts: ['${POD_NAMESPACE}config.${DOMAIN_NAME}']
-#       methods: ["GET"]
-#       paths: ["/tos", "/app"]
-#       strip_path: false
-#   - name: api-config-private
-#     apply_to: api-config
-#     config:
-#       hosts: ['${POD_NAMESPACE}config.${DOMAIN_NAME}']
-#   - name: api-core-private
-#     apply_to: api-core
-#     config:
-#       hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#   - name: api-core-public-get
-#     apply_to: api-core
-#     config:
-#       hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["GET"]
-#       paths: ["/organizations", "/patients/email/exists", "/account/status"]
-#       strip_path: false
-#   - name: api-core-public-post
-#     apply_to: api-core
-#     config:
-#       hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["POST"]
-#       paths: ["/organizations", "/register", "/login", "/forgot", "/reset"]
-#       strip_path: false
-#   - name: api-horizon-auth
-#     apply_to: api-horizon
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-horizon.${DOMAIN_NAME}']
-#       methods: ["GET", "POST"]
-#       paths: ["/authentication"]
-#       strip_path: false
-#   - name: api-horizon-public
-#     apply_to: api-horizon
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-horizon.${DOMAIN_NAME},${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["POST"]
-#       paths: ["/horizon/login", "/horizon/parse_login_error", "/horizon/consentofcare/accept"]
-#       strip_path: false
-#   - name: api-horizon-private
-#     apply_to: api-horizon
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-horizon.${DOMAIN_NAME}']
-#       methods: ["GET"]
-#       paths: ["/horizon/providersearch", "/horizon/idcard"]
-#       strip_path: false
-#   - name: api-messages-public
-#     apply_to: api-messages
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}', '${POD_NAMESPACE}providers.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["GET"]
-#       paths: ["/socket.io"]
-#       strip_path: false
-#   - name: api-messages-private
-#     apply_to: api-messages
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}', '${POD_NAMESPACE}providers.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["POST", "GET"]
-#       paths: ["/messages"]
-#       strip_path: false
-#   - name: api-providers-public
-#     apply_to: api-providers
-#     config:
-#       hosts: ['${POD_NAMESPACE}providers.${DOMAIN_NAME}']
-#       methods: ["POST"]
-#       paths: ["/login", "/forgot", "/reset"]
-#       strip_path: false
-#   - name: api-providers-private
-#     apply_to: api-providers
-#     config:
-#       hosts: ['${POD_NAMESPACE}providers.${DOMAIN_NAME}']
-#   - name: api-scheduling-search
-#     apply_to: api-scheduling
-#     config:
-#       hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}', '${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}']
-#       methods: ["GET"]
-#       paths: ["/searchProviders"]
-#       strip_path: false
-#   - name: api-scheduling-reasons
-#     apply_to: api-scheduling
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}']
-#       methods: ["GET", "OPTIONS"]
-#       paths: ["/reasons"]
-#       strip_path: false
-#   - name: api-scheduling-searches
-#     apply_to: api-scheduling
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}']
-#       methods: ["GET", "OPTIONS", "POST"]
-#       paths: ["/searches"]
-#       strip_path: false
-#   - name: api-scheduling-providers
-#     apply_to: api-scheduling
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}']
-#       methods: ["OPTIONS", "POST"]
-#       paths: ["/search", "/searchProviders"]
-#       strip_path: false
-#   - name: api-scheduling-appointments
-#     apply_to: api-scheduling
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}', '${POD_NAMESPACE}api-cc.${DOMAIN_NAME}']
-#       methods: ["GET", "OPTIONS", "POST", "PUT"]
-#       paths: ["/appointments"]
-#       strip_path: false
-#   - name: api-sdk
-#     apply_to: api-sdk
-#     config:
-#       hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["POST", "GET"]
-#       paths: ["/sdk"]
-#       strip_path: false
-#   - name: api-twilio-public
-#     apply_to: api-twilio
-#     config:
-#       hosts: ['${POD_NAMESPACE}webhooks.${DOMAIN_NAME}']
-#       methods: ["POST"]
-#       paths: ["/voicecall"]
-#       strip_path: false
-#   - name: api-twilio-private
-#     apply_to: api-twilio
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}', '${POD_NAMESPACE}providers.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["POST"]
-#       paths: ["/verify"]
-#       strip_path: false
-#   - name: api-twilio-private-calls
-#     apply_to: api-twilio
-#     config:
-#       hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}', '${POD_NAMESPACE}providers.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
-#       methods: ["GET"]
-#       paths: ["/calls/token"]
-#       strip_path: false
-#   - name: stash-private
-#     apply_to: stash
-#     config:
-#       hosts: ['${POD_NAMESPACE}uploads.${DOMAIN_NAME}', '${POD_NAMESPACE}stash.${DOMAIN_NAME}']
+routes:
+  - service: api-admin
+    hosts: ['${POD_NAMESPACE}.api-admin.${DOMAIN_NAME}']
+    paths: ["/auth"]
+  - service: api-admin
+    hosts: ['${POD_NAMESPACE}api-admin.${DOMAIN_NAME}']
+    methods: ["POST"]
+    paths: ["/auth"]
+    strip_path: false
+  - service: api-command-center
+    hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}']
+  - service: api-command-center
+    hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}']
+    methods: ["POST"]
+    paths: ["/auth"]
+    strip_path: false
+  - service: api-config
+    hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["GET"]
+    paths: ["/config"]
+    strip_path: true
+  - service: api-config
+    hosts: ['${POD_NAMESPACE}config.${DOMAIN_NAME}']
+    methods: ["GET"]
+    paths: ["/tos", "/app"]
+    strip_path: false
+  - service: api-config
+    hosts: ['${POD_NAMESPACE}config.${DOMAIN_NAME}']
+  - service: api-core
+    hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
+  - service: api-core
+    hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["GET"]
+    paths: ["/organizations", "/patients/email/exists", "/account/status"]
+    strip_path: false
+  - service: api-core
+    hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["POST"]
+    paths: ["/organizations", "/register", "/login", "/forgot", "/reset"]
+    strip_path: false
+  - service: api-horizon
+    hosts: ['${POD_NAMESPACE}api-horizon.${DOMAIN_NAME}']
+    methods: ["GET", "POST"]
+    paths: ["/authentication"]
+    strip_path: false
+  - service: api-horizon
+    hosts: ['${POD_NAMESPACE}api-horizon.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["POST"]
+    paths: ["/horizon/login", "/horizon/parse_login_error", "/horizon/consentofcare/accept"]
+    strip_path: false
+  - service: api-horizon
+    hosts: ['${POD_NAMESPACE}api-horizon.${DOMAIN_NAME}']
+    methods: ["GET"]
+    paths: ["/horizon/providersearch", "/horizon/idcard"]
+    strip_path: false
+  - service: api-messages
+    hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}', '${POD_NAMESPACE}providers.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["GET"]
+    paths: ["/socket.io"]
+    strip_path: false
+  - service: api-messages
+    hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}', '${POD_NAMESPACE}providers.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["POST", "GET"]
+    paths: ["/messages"]
+    strip_path: false
+  - service: api-providers
+    hosts: ['${POD_NAMESPACE}providers.${DOMAIN_NAME}']
+    methods: ["POST"]
+    paths: ["/login", "/forgot", "/reset"]
+    strip_path: false
+  - service: api-providers
+    hosts: ['${POD_NAMESPACE}providers.${DOMAIN_NAME}']
+  - service: api-scheduling
+    hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}', '${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}']
+    methods: ["GET"]
+    paths: ["/searchProviders"]
+    strip_path: false
+  - service: api-scheduling
+    hosts: ['${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}']
+    methods: ["GET", "OPTIONS"]
+    paths: ["/reasons"]
+    strip_path: false
+  - service: api-scheduling
+    hosts: ['${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}']
+    methods: ["GET", "OPTIONS", "POST"]
+    paths: ["/searches"]
+    strip_path: false
+  - service: api-scheduling
+    hosts: ['${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}']
+    methods: ["OPTIONS", "POST"]
+    paths: ["/search", "/searchProviders"]
+    strip_path: false
+  - service: api-scheduling
+    hosts: ['${POD_NAMESPACE}api-scheduling.${DOMAIN_NAME}', '${POD_NAMESPACE}api-cc.${DOMAIN_NAME}']
+    methods: ["GET", "OPTIONS", "POST", "PUT"]
+    paths: ["/appointments"]
+    strip_path: false
+  - service: api-sdk
+    hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["POST", "GET"]
+    paths: ["/sdk"]
+    strip_path: false
+  - service: api-twilio
+    hosts: ['${POD_NAMESPACE}webhooks.${DOMAIN_NAME}']
+    methods: ["POST"]
+    paths: ["/voicecall"]
+    strip_path: false
+  - service: api-twilio
+    hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}', '${POD_NAMESPACE}providers.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["POST"]
+    paths: ["/verify"]
+    strip_path: false
+  - service: api-twilio
+    hosts: ['${POD_NAMESPACE}api-cc.${DOMAIN_NAME}', '${POD_NAMESPACE}providers.${DOMAIN_NAME}', '${POD_NAMESPACE}api.${DOMAIN_NAME}']
+    methods: ["GET"]
+    paths: ["/calls/token"]
+    strip_path: false
+  - service: stash
+    hosts: ['${POD_NAMESPACE}uploads.${DOMAIN_NAME}', '${POD_NAMESPACE}stash.${DOMAIN_NAME}']
 
 # plugins:
 #   - name: jwt
