@@ -22,9 +22,9 @@ var (
 	routeMap = make(map[string]string)
 )
 
-// type response struct {
-// 	ID string `json:"id"`
-// }
+type response struct {
+	ID string `json:"id"`
+}
 
 // Client represents the public API
 type Client struct {
@@ -43,14 +43,12 @@ func (c *Client) httpRequest(method, url string, payload []byte, response interf
 
 	req.Header.Set(contentType, applicationJSON)
 	req.Header.Set("User-Agent", "kongfig")
+
 	res, err := c.client.Do(req)
 
 	if err != nil {
 		return nil, err
 	}
-
-	// defer res.Body.Close()
-	// json.NewDecoder(res.Body).Decode(&response)
 
 	return res, err
 }
@@ -101,12 +99,24 @@ func adminURL(c *Config) string {
 
 // ApplyConfig iterates through all services and updates config, deletes and recreates routes
 func (c *Client) ApplyConfig() error {
+	if err := c.DeleteConsumers(); err != nil {
+		return err
+	}
+
+	if err := c.DeleteRoutes(); err != nil {
+		return err
+	}
+
+	if err := c.DeleteServices(); err != nil {
+		return err
+	}
+
+	if err := c.DeletePlugins(); err != nil {
+		return err
+	}
+
 	for _, s := range c.config.Services {
 		if err := c.UpdateService(s); err != nil {
-			return err
-		}
-
-		if err := c.DeleteRoutes(s); err != nil {
 			return err
 		}
 	}
@@ -147,27 +157,53 @@ func (c *Client) UpdateService(s Service) error {
 	return nil
 }
 
+// DeleteServices iterates through all services and deletes each one
+func (c *Client) DeleteServices() error {
+	services, err := c.GetServices()
+
+	if err != nil {
+		return err
+	}
+
+	for _, r := range services {
+		if err := c.DeleteService(r); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteService deletes a service for a service based on route id
+func (c *Client) DeleteService(r Service) error {
+	url := fmt.Sprintf("%s/services/%s", c.BaseURL, r.Name)
+	res, err := c.httpRequest(http.MethodDelete, url, nil, nil)
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("[HTTP %d] Error deleting service. Bad response response from the API", res.StatusCode)
+	}
+
+	fmt.Printf("[HTTP %d] Service [%s] deleted \n", res.StatusCode, r.Name)
+
+	return nil
+}
+
 // CreateRoutes iterates through all available routes and creates for the associated service
 func (c *Client) CreateRoutes() error {
 	for _, r := range c.config.Routes {
 		url := fmt.Sprintf("%s/services/%s/routes", c.BaseURL, r.Service)
 
 		payload, err := json.Marshal(r)
-		fmt.Println("PAYLOAD: ", string(payload))
 
 		if err != nil {
 			return err
 		}
 
 		res, err := c.httpRequest(http.MethodPost, url, payload, nil)
-
-		var response interface{}
-
-		defer res.Body.Close()
-		json.NewDecoder(res.Body).Decode(&response)
-
-		fmt.Println("RESPONSE BODY: ", response)
-
 		if err != nil {
 			return err
 		}
@@ -182,9 +218,9 @@ func (c *Client) CreateRoutes() error {
 	return nil
 }
 
-// GetRoutes fetches all routes from Kong for the specified service
-func (c *Client) GetRoutes(s Service) ([]Route, error) {
-	url := fmt.Sprintf("%s/services/%s/routes", c.BaseURL, s.Name)
+// GetRoutes fetches all routes from Kong
+func (c *Client) GetRoutes() ([]Route, error) {
+	url := fmt.Sprintf("%s/routes", c.BaseURL)
 	r := Routes{}
 
 	res, err := c.httpRequest(http.MethodGet, url, nil, &r)
@@ -201,8 +237,8 @@ func (c *Client) GetRoutes(s Service) ([]Route, error) {
 }
 
 // DeleteRoutes iterates through all routes and deletes each one
-func (c *Client) DeleteRoutes(s Service) error {
-	routes, err := c.GetRoutes(s)
+func (c *Client) DeleteRoutes() error {
+	routes, err := c.GetRoutes()
 
 	if err != nil {
 		return err
@@ -233,6 +269,77 @@ func (c *Client) DeleteRoute(r Route) error {
 	fmt.Printf("[HTTP %d] Route [%s] deleted \n", res.StatusCode, r.ID)
 
 	return nil
+}
+
+// GetCredentials fetches all consumers from Kong
+func (c *Client) GetConsumers() ([]Consumer, error) {
+	url := fmt.Sprintf("%s/consumers", c.BaseURL)
+	r := Consumers{}
+
+	res, err := c.httpRequest(http.MethodGet, url, nil, &r)
+
+	if err != nil {
+		return r.Data, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return r.Data, fmt.Errorf("[HTTP %d] Error fetching routes. Bad response response from the API", res.StatusCode)
+	}
+
+	return r.Data, nil
+}
+
+// DeleteConsumers iterates through all routes and deletes each one
+func (c *Client) DeleteConsumers() error {
+	consumers, err := c.GetConsumers()
+
+	if err != nil {
+		return err
+	}
+
+	for _, r := range consumers {
+		if err := c.DeleteConsumer(r); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteConsumer deletes a consumer for a service based on route id
+func (c *Client) DeleteConsumer(r Consumer) error {
+	url := fmt.Sprintf("%s/consumers/%s", c.BaseURL, r.Username)
+	res, err := c.httpRequest(http.MethodDelete, url, nil, nil)
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("[HTTP %d] Error deleting consumer. Bad response response from the API", res.StatusCode)
+	}
+
+	fmt.Printf("[HTTP %d] Consumer [%s] deleted \n", res.StatusCode, r.Username)
+
+	return nil
+}
+
+// GetServices fetches all services from Kong
+func (c *Client) GetServices() ([]Service, error) {
+	url := fmt.Sprintf("%s/services", c.BaseURL)
+	r := Services{}
+
+	res, err := c.httpRequest(http.MethodGet, url, nil, &r)
+
+	if err != nil {
+		return r.Data, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return r.Data, fmt.Errorf("[HTTP %d] Error fetching Services. Bad response response from the API", res.StatusCode)
+	}
+
+	return r.Data, nil
 }
 
 // CreatePlugins creates plugins for associated services
@@ -287,10 +394,55 @@ func (c *Client) CreatePlugins(service Service) error {
 	return nil
 }
 
-// func (c *Client) DeletePlugin(service Service) error {
+// GetPlugins fetches all plugins from Kong
+func (c *Client) GetPlugins() ([]Plugin, error) {
+	url := fmt.Sprintf("%s/plugins", c.BaseURL)
+	r := Plugins{}
 
-// }
+	res, err := c.httpRequest(http.MethodGet, url, nil, &r)
 
-// func (c *Client) DeletePlugins(service Service) error {
+	if err != nil {
+		return r.Data, err
+	}
 
-// }
+	if res.StatusCode != http.StatusOK {
+		return r.Data, fmt.Errorf("[HTTP %d] Error fetching Plugins. Bad response response from the API", res.StatusCode)
+	}
+
+	return r.Data, nil
+}
+
+// DeletePlugins iterates through all plugins and deletes each one
+func (c *Client) DeletePlugins() error {
+	plugins, err := c.GetPlugins()
+
+	if err != nil {
+		return err
+	}
+
+	for _, r := range plugins {
+		if err := c.DeletePlugin(r); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeletePlugin deletes a plugin for a service based on route id
+func (c *Client) DeletePlugin(r Plugin) error {
+	url := fmt.Sprintf("%s/plugins/%s", c.BaseURL, r.Name)
+	res, err := c.httpRequest(http.MethodDelete, url, nil, nil)
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("[HTTP %d] Error deleting plugin. Bad response response from the API", res.StatusCode)
+	}
+
+	fmt.Printf("[HTTP %d] Plugin [%s] deleted \n", res.StatusCode, r.Name)
+
+	return nil
+}

@@ -40,6 +40,11 @@ type Route struct {
 	PreserveHost  bool     `yaml:"preserve_host,omitempty" json:"preserve_host,omitempty"`
 }
 
+type Services struct {
+	Next string    `yaml:"next,omitempty" json:"next,omitempty"`
+	Data []Service `yaml:"data,omitempty" json:"data,omitempty"`
+}
+
 // Routes represents routing information
 type Routes struct {
 	Next string  `yaml:"next,omitempty" json:"next,omitempty"`
@@ -50,6 +55,11 @@ type Routes struct {
 type Consumer struct {
 	Username string `yaml:"username"`
 	CustomID string `yaml:"custom_id"`
+}
+
+type Consumers struct {
+	Next string     `yaml:"next,omitempty" json:"next,omitempty"`
+	Data []Consumer `yaml:"data,omitempty" json:"data,omitempty"`
 }
 
 // Credential represents user
@@ -64,6 +74,11 @@ type CredentialConfig struct {
 	ID     string `yaml:"id"`
 	Key    string `yaml:"key"`
 	Secret string `yaml:"secret"`
+}
+
+type Plugins struct {
+	Next string   `yaml:"next,omitempty" json:"next,omitempty"`
+	Data []Plugin `yaml:"data,omitempty" json:"data,omitempty"`
 }
 
 // Plugin represents a feature or middleware in Kong
