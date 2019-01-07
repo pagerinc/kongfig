@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/pagerinc/kongfig/api"
+	"github.com/AdiedX/kongfig/api"
 	"github.com/spf13/cobra"
 )
 

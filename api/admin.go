@@ -17,6 +17,15 @@ const (
 	applicationJSON string = "application/json; charset=utf-8"
 )
 
+var (
+	// Keeps track of route names to route IDs
+	routeMap = make(map[string]string)
+)
+
+// type response struct {
+// 	ID string `json:"id"`
+// }
+
 // Client represents the public API
 type Client struct {
 	config  *Config
@@ -40,8 +49,8 @@ func (c *Client) httpRequest(method, url string, payload []byte, response interf
 		return nil, err
 	}
 
-	defer res.Body.Close()
-	json.NewDecoder(res.Body).Decode(&response)
+	// defer res.Body.Close()
+	// json.NewDecoder(res.Body).Decode(&response)
 
 	return res, err
 }
@@ -100,10 +109,10 @@ func (c *Client) ApplyConfig() error {
 		if err := c.DeleteRoutes(s); err != nil {
 			return err
 		}
+	}
 
-		if err := c.CreateRoutes(); err != nil {
-			return err
-		}
+	if err := c.CreateRoutes(); err != nil {
+		return err
 	}
 
 	return nil
@@ -144,12 +153,20 @@ func (c *Client) CreateRoutes() error {
 		url := fmt.Sprintf("%s/services/%s/routes", c.BaseURL, r.Service)
 
 		payload, err := json.Marshal(r)
+		fmt.Println("PAYLOAD: ", string(payload))
 
 		if err != nil {
 			return err
 		}
 
 		res, err := c.httpRequest(http.MethodPost, url, payload, nil)
+
+		var response interface{}
+
+		defer res.Body.Close()
+		json.NewDecoder(res.Body).Decode(&response)
+
+		fmt.Println("RESPONSE BODY: ", response)
 
 		if err != nil {
 			return err
@@ -218,22 +235,62 @@ func (c *Client) DeleteRoute(r Route) error {
 	return nil
 }
 
-// Commenting out for now. A future version of the Plugins feature will replace this:
-// func (c *Client) CreatePlugin(s Service) error {
-// 	url := fmt.Sprintf("%s/services/%s/plugins", c.BaseURL, s.Name)
+// CreatePlugins creates plugins for associated services
+func (c *Client) CreatePlugins(service Service) error {
+	for _, plugin := range c.config.Plugins {
 
-// 	payload, err := json.Marshal(s.Plugin)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	res, err := c.httpRequest(http.MethodPost, url, payload, nil)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if res.StatusCode != http.StatusCreated {
-// 		return fmt.Errorf("error creating plugin. Bad response response from the API [%d]", res.StatusCode)
-// 	}
+		for _, service := range plugin.Services {
+			url := fmt.Sprintf("%s/services/%s/plugins", c.BaseURL, service)
 
-// 	log.Printf("plugin created [%s]", s.Name)
-// 	return nil
+			payload, err := json.Marshal(plugin)
+
+			if err != nil {
+				return err
+			}
+
+			res, err := c.httpRequest(http.MethodPost, url, payload, nil)
+
+			if err != nil {
+				return err
+			}
+
+			if res.StatusCode != http.StatusCreated {
+				return fmt.Errorf("[HTTP %d] Error creating plugin. Bad response from Kong API", res.StatusCode)
+			}
+
+			fmt.Printf("[HTTP %d] Plugin created for service %s \n", res.StatusCode, service)
+		}
+
+		// for _, route := range plugin.Routes {
+		// 	url := fmt.Sprintf("%s/services/%s/plugins", c.BaseURL, service)
+
+		// 	payload, err := json.Marshal(plugin)
+
+		// 	if err != nil {
+		// 		return err
+		// 	}
+
+		// 	res, err := c.httpRequest(http.MethodPost, url, payload, nil)
+
+		// 	if err != nil {
+		// 		return err
+		// 	}
+
+		// 	if res.StatusCode != http.StatusCreated {
+		// 		return fmt.Errorf("[HTTP %d] Error creating plugin. Bad response from Kong API", res.StatusCode)
+		// 	}
+
+		// 	fmt.Printf("[HTTP %d] Plugin created for service %s \n", res.StatusCode, service)
+		// }
+	}
+
+	return nil
+}
+
+// func (c *Client) DeletePlugin(service Service) error {
+
+// }
+
+// func (c *Client) DeletePlugins(service Service) error {
+
 // }

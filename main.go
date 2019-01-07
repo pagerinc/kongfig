@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/pagerinc/kongfig/cmd"
+	"github.com/AdiedX/kongfig/cmd"
 )
 
 func main() {
