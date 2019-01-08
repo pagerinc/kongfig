@@ -19,12 +19,9 @@ const (
 
 var (
 	// Keeps track of route names to route IDs
+	// Used in the creation of plugins for specific routes
 	routeMap = make(map[string]string)
 )
-
-type response struct {
-	ID string `json:"id"`
-}
 
 // Client represents the public API
 type Client struct {
@@ -204,19 +201,19 @@ func (c *Client) DeleteService(r Service) error {
 // GetServices fetches all services from Kong
 func (c *Client) GetServices() ([]Service, error) {
 	url := fmt.Sprintf("%s/services", c.BaseURL)
-	r := Services{}
+	services := Services{}
 
-	res, err := c.httpRequest(http.MethodGet, url, nil, &r)
+	res, err := c.httpRequest(http.MethodGet, url, nil, &services)
 
 	if err != nil {
-		return r.Data, err
+		return services.Data, err
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return r.Data, fmt.Errorf("[HTTP %d] Error fetching Services. Bad response response from the API", res.StatusCode)
+		return services.Data, fmt.Errorf("[HTTP %d] Error fetching Services. Bad response response from the API", res.StatusCode)
 	}
 
-	return r.Data, nil
+	return services.Data, nil
 }
 
 // CreateRoutes iterates through all available routes and creates for the associated service
@@ -226,18 +223,34 @@ func (c *Client) CreateRoutes() error {
 
 		payload, err := json.Marshal(r)
 
-		fmt.Println("URL: ", url)
-		fmt.Println("PAYLOAD: ", string(payload))
+		if err != nil {
+			return err
+		}
+
+		req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
 
 		if err != nil {
 			return err
 		}
 
-		res, err := c.httpRequest(http.MethodPost, url, payload, nil)
+		req.Header.Set(contentType, applicationJSON)
+		req.Header.Set("User-Agent", "kongfig")
+
+		res, err := c.client.Do(req)
 
 		if err != nil {
 			return err
 		}
+
+		defer res.Body.Close()
+
+		route := Route{}
+		json.NewDecoder(res.Body).Decode(&route)
+
+		// Mapping route names to route ids
+		// We do this so that we can create plugins for routes without having to
+		// specific route id each time. It's easier to refer to routes via names
+		routeMap[r.Name] = route.ID
 
 		if res.StatusCode == http.StatusNotFound {
 			return fmt.Errorf("[HTTP %d] Error creating routes: Service not found", res.StatusCode)
@@ -291,7 +304,7 @@ func (c *Client) DeleteRoutes() error {
 // DeleteRoute deletes a route for a service based on route id
 func (c *Client) DeleteRoute(r Route) error {
 	url := fmt.Sprintf("%s/routes/%s", c.BaseURL, r.ID)
-	fmt.Println("URL:", url)
+
 	res, err := c.httpRequest(http.MethodDelete, url, nil, nil)
 
 	if err != nil {
@@ -310,19 +323,19 @@ func (c *Client) DeleteRoute(r Route) error {
 // GetConsumers fetches all consumers from Kong
 func (c *Client) GetConsumers() ([]Consumer, error) {
 	url := fmt.Sprintf("%s/consumers", c.BaseURL)
-	r := Consumers{}
+	consumers := Consumers{}
 
-	res, err := c.httpRequest(http.MethodGet, url, nil, &r)
+	res, err := c.httpRequest(http.MethodGet, url, nil, &consumers)
 
 	if err != nil {
-		return r.Data, err
+		return consumers.Data, err
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return r.Data, fmt.Errorf("[HTTP %d] Error fetching routes. Bad response response from the API", res.StatusCode)
+		return consumers.Data, fmt.Errorf("[HTTP %d] Error fetching routes. Bad response response from the API", res.StatusCode)
 	}
 
-	return r.Data, nil
+	return consumers.Data, nil
 }
 
 // DeleteConsumers iterates through all routes and deletes each one
@@ -360,17 +373,20 @@ func (c *Client) DeleteConsumer(r Consumer) error {
 	return nil
 }
 
-// CreatePlugins creates plugins for associated services
+// CreatePlugins creates global plugins, and plugins for services & routes
+// Global plugins apply to all services and their routes
+// Service plugins apply to all routes of a service
+// Route plugins apply to only the specified route of a service
 func (c *Client) CreatePlugins() error {
 	for _, plugin := range c.config.Plugins {
-		for _, service := range plugin.Services {
-			url := fmt.Sprintf("%s/services/%s/plugins", c.BaseURL, service)
+		// Create global plugins
+		if plugin.Target == "global" {
+			url := fmt.Sprintf("%s/plugins", c.BaseURL)
 
 			payload, err := json.Marshal(plugin)
 
-			fmt.Println("PAYLOAD: ", string(payload))
-
 			if err != nil {
+				fmt.Println("Error marshalling payload: ", err)
 				return err
 			}
 
@@ -381,34 +397,72 @@ func (c *Client) CreatePlugins() error {
 				return err
 			}
 
-			if res.StatusCode != http.StatusCreated {
-				return fmt.Errorf("[HTTP %d] Error creating plugin. Bad response from Kong API", res.StatusCode)
+			if res.StatusCode == http.StatusNotFound {
+				return fmt.Errorf("[HTTP %d] Global plugin already exists", res.StatusCode)
 			}
 
-			fmt.Printf("[HTTP %d] Plugin created for service %s \n", res.StatusCode, service)
+			if res.StatusCode != http.StatusCreated {
+				return fmt.Errorf("[HTTP %d] Error creating global plugin. Bad response from Kong API", res.StatusCode)
+			}
+
+			fmt.Printf("[HTTP %d] Global plugin created %s \n", res.StatusCode, plugin.Name)
+		} else {
+			// Creating plugins for specific services and routes
+			// Create plugins for services:
+			for _, service := range plugin.Services {
+				url := fmt.Sprintf("%s/services/%s/plugins", c.BaseURL, service)
+
+				payload, err := json.Marshal(plugin)
+
+				if err != nil {
+					fmt.Println("Error marshalling payload: ", err)
+					return err
+				}
+
+				res, err := c.httpRequest(http.MethodPost, url, payload, nil)
+
+				if err != nil {
+					fmt.Println("Error creating plugin: ", err)
+					return err
+				}
+
+				if res.StatusCode != http.StatusCreated {
+					return fmt.Errorf("[HTTP %d] Error creating plugin for service %s. Bad response from Kong API", res.StatusCode, service)
+				}
+
+				fmt.Printf("[HTTP %d] Plugin created for service %s \n", res.StatusCode, service)
+			}
+
+			// Create plugins for routes
+			for _, route := range plugin.Routes {
+				routeID := routeMap[route]
+
+				url := fmt.Sprintf("%s/routes/%s/plugins", c.BaseURL, routeID)
+				payload, err := json.Marshal(plugin)
+
+				if err != nil {
+					fmt.Println("Error marshalling payload: ", err)
+					return err
+				}
+
+				res, err := c.httpRequest(http.MethodPost, url, payload, nil)
+
+				if err != nil {
+					fmt.Println("Error creating plugin: ", err)
+					return err
+				}
+
+				if res.StatusCode == http.StatusNotFound {
+					return fmt.Errorf("[HTTP %d] Error creating plugin. Route not found %s", res.StatusCode, route)
+				}
+
+				if res.StatusCode != http.StatusCreated {
+					return fmt.Errorf("[HTTP %d] Error creating plugin for route %s. Bad response from Kong API", res.StatusCode, route)
+				}
+
+				fmt.Printf("[HTTP %d] Plugin created for route %s \n", res.StatusCode, route)
+			}
 		}
-
-		// for _, route := range plugin.Routes {
-		// 	url := fmt.Sprintf("%s/services/%s/plugins", c.BaseURL, service)
-
-		// 	payload, err := json.Marshal(plugin)
-
-		// 	if err != nil {
-		// 		return err
-		// 	}
-
-		// 	res, err := c.httpRequest(http.MethodPost, url, payload, nil)
-
-		// 	if err != nil {
-		// 		return err
-		// 	}
-
-		// 	if res.StatusCode != http.StatusCreated {
-		// 		return fmt.Errorf("[HTTP %d] Error creating plugin. Bad response from Kong API", res.StatusCode)
-		// 	}
-
-		// 	fmt.Printf("[HTTP %d] Plugin created for service %s \n", res.StatusCode, service)
-		// }
 	}
 
 	return nil
@@ -420,9 +474,6 @@ func (c *Client) GetPlugins() ([]Plugin, error) {
 	plugins := Plugins{}
 
 	res, err := c.httpRequest(http.MethodGet, url, nil, &plugins)
-
-	// defer res.Body.Close()
-	// json.NewDecoder(res.Body).Decode(&plugins)
 
 	if err != nil {
 		return plugins.Data, err
@@ -454,7 +505,7 @@ func (c *Client) DeletePlugins() error {
 
 // DeletePlugin deletes a plugin for a service based on route id
 func (c *Client) DeletePlugin(plugin Plugin) error {
-	url := fmt.Sprintf("%s/plugins/%s", c.BaseURL, plugin.Name)
+	url := fmt.Sprintf("%s/plugins/%s", c.BaseURL, plugin.ID)
 	res, err := c.httpRequest(http.MethodDelete, url, nil, nil)
 
 	if err != nil {
