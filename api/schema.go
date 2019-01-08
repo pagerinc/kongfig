@@ -83,12 +83,12 @@ type Plugins struct {
 
 // Plugin represents a feature or middleware in Kong
 type Plugin struct {
-	Name     string       `yaml:"name"`
-	Enabled  bool         `yaml:"enabled,omitempty"`
-	Services []string     `yaml:"services,omitempty"`
-	Routes   []string     `yaml:"routes,omitempty"`
-	Target   []string     `yaml:"target,omitempty"`
-	Config   PluginConfig `yaml:"config,omitempty"`
+	Name     string       `yaml:"name,omitempty" json:"name,omitempty"`
+	Enabled  bool         `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Services []string     `yaml:"services,omitempty" json:"-"`
+	Routes   []string     `yaml:"routes,omitempty" json:"routes,omitempty"`
+	Target   string       `yaml:"target,omitempty" json:"target,omitempty"`
+	Config   PluginConfig `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
 // PluginConfig represents the objects in config slive in the Plugin struct
