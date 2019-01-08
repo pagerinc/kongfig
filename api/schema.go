@@ -25,9 +25,8 @@ type Service struct {
 	Retries        int    `yaml:"retries,omitempty" json:"retries,omitempty"`
 }
 
-// Route represents routes for each microservice
+// Route represents a route for a microservice
 type Route struct {
-	// Name is not posted to the Kong API, hence it doesn't need a json tag
 	Name          string   `yaml:"name,omitempty" json:"-"`
 	ID            string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Service       string   `yaml:"service,omitempty" json:"service,omitempty"`
@@ -40,12 +39,15 @@ type Route struct {
 	PreserveHost  bool     `yaml:"preserve_host,omitempty" json:"preserve_host,omitempty"`
 }
 
+// Services represents the response body returned from GET /services, a Kong API endpoint
+// Contains service data for all services
 type Services struct {
 	Next string    `yaml:"next,omitempty" json:"next,omitempty"`
 	Data []Service `yaml:"data,omitempty" json:"data,omitempty"`
 }
 
-// Routes represents routing information
+// Routes represents the response body returned from GET /routes, a Kong API endpoint
+// Contains route data for all routes
 type Routes struct {
 	Next string  `yaml:"next,omitempty" json:"next,omitempty"`
 	Data []Route `yaml:"data,omitempty" json:"data,omitempty"`
@@ -57,6 +59,7 @@ type Consumer struct {
 	CustomID string `yaml:"custom_id"`
 }
 
+// Consumers represents the response body returned from GET /consumers, a Kong API endpoint
 type Consumers struct {
 	Next string     `yaml:"next,omitempty" json:"next,omitempty"`
 	Data []Consumer `yaml:"data,omitempty" json:"data,omitempty"`
@@ -76,6 +79,7 @@ type CredentialConfig struct {
 	Secret string `yaml:"secret"`
 }
 
+// Plugins represents the response body of GET /plugins endpoint of Kong Admin API
 type Plugins struct {
 	Next string   `yaml:"next,omitempty" json:"next,omitempty"`
 	Data []Plugin `yaml:"data,omitempty" json:"data,omitempty"`
@@ -83,11 +87,12 @@ type Plugins struct {
 
 // Plugin represents a feature or middleware in Kong
 type Plugin struct {
+	ID       string       `yaml:"id,omitempty" json:"id,omitempty"`
 	Name     string       `yaml:"name,omitempty" json:"name,omitempty"`
 	Enabled  bool         `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	Services []string     `yaml:"services,omitempty" json:"-"`
-	Routes   []string     `yaml:"routes,omitempty" json:"routes,omitempty"`
-	Target   string       `yaml:"target,omitempty" json:"target,omitempty"`
+	Routes   []string     `yaml:"routes,omitempty" json:"-"`
+	Target   string       `yaml:"target,omitempty" json:"-"`
 	Config   PluginConfig `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
