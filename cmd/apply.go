@@ -33,7 +33,6 @@ var applyCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-
 		err = client.ApplyConfig()
 		return err
 	},

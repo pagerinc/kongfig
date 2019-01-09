@@ -130,7 +130,6 @@ func (c *Client) ApplyConfig() error {
 	if err := c.CreatePlugins(); err != nil {
 		return err
 	}
-
 	return nil
 }
 

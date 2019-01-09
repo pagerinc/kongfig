@@ -39,6 +39,18 @@ type Route struct {
 	PreserveHost  bool     `yaml:"preserve_host,omitempty" json:"preserve_host,omitempty"`
 }
 
+type Service struct {
+	ConnectTimeout int     `json:"connect_timeout,omitempty"`
+	Name           string  `json:"name,omitempty"`
+	Path           string  `json:"path,omitempty"`
+	ReadTimeout    int     `json:"read_timeout,omitempty"`
+	Retries        int     `json:"retries,omitempty"`
+	URL            string  `json:"url,omitempty"`
+	WriteTimeout   int     `json:"write_timeout,omitempty"`
+	Routes         []Route `json:"routes,omitempty"`
+	Plugin         Plugin  `json:"plugin,omitempty"`
+}
+
 // Services represents the response body returned from GET /services, a Kong API endpoint
 // Contains service data for all services
 type Services struct {
