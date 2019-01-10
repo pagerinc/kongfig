@@ -15,6 +15,7 @@ import (
 const (
 	contentType     string = "Content-Type"
 	applicationJSON string = "application/json; charset=utf-8"
+	userAgent       string = "kongfig"
 )
 
 var (
@@ -38,8 +39,7 @@ func (c *Client) httpRequest(method, url string, payload []byte, response interf
 		return &http.Response{}, err
 	}
 
-	req.Header.Set(contentType, applicationJSON)
-	req.Header.Set("User-Agent", "kongfig")
+	req.Header.Set(contentType, applicationJSON, userAgent)
 
 	res, err := c.client.Do(req)
 
