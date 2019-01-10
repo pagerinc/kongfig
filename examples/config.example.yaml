@@ -146,5 +146,7 @@ plugins:
 consumers:
   - username: admin
     custom_id: admin@pager.com
+  - username: fsilva
+    custom_id: fsilva@pager.com
 
 credentials: []

@@ -12,19 +12,6 @@ type Config struct {
 	Credentials []Credential `yaml:"credentials,omitempty"`
 }
 
-// Service represents the upstream microservice
-type Service struct {
-	Name           string `yaml:"name,omitempty" json:"name,omitempty"`
-	URL            string `yaml:"url,omitempty" json:"url,omitempty"`
-	Host           string `yaml:"host,omitempty" json:"host,omitempty"`
-	Path           string `yaml:"path,omitempty" json:"path,omitempty"`
-	Port           int    `yaml:"port,omitempty" json:"port,omitempty"`
-	ConnectTimeout int    `yaml:"connect_timeout,omitempty" json:"connect_timeout,omitempty"`
-	WriteTimeout   int    `yaml:"write_timeout,omitempty" json:"write_timeout,omitempty"`
-	ReadTimeout    int    `yaml:"read_timeout,omitempty" json:"read_timeout,omitempty"`
-	Retries        int    `yaml:"retries,omitempty" json:"retries,omitempty"`
-}
-
 // Route represents a route for a microservice
 type Route struct {
 	Name          string   `yaml:"name,omitempty" json:"-"`
@@ -39,16 +26,17 @@ type Route struct {
 	PreserveHost  bool     `yaml:"preserve_host,omitempty" json:"preserve_host,omitempty"`
 }
 
+// Service represents the upstream microservice
 type Service struct {
-	ConnectTimeout int     `json:"connect_timeout,omitempty"`
-	Name           string  `json:"name,omitempty"`
-	Path           string  `json:"path,omitempty"`
-	ReadTimeout    int     `json:"read_timeout,omitempty"`
-	Retries        int     `json:"retries,omitempty"`
-	URL            string  `json:"url,omitempty"`
-	WriteTimeout   int     `json:"write_timeout,omitempty"`
-	Routes         []Route `json:"routes,omitempty"`
-	Plugin         Plugin  `json:"plugin,omitempty"`
+	Name           string `yaml:"name,omitempty" json:"name,omitempty"`
+	URL            string `yaml:"url,omitempty" json:"url,omitempty"`
+	Host           string `yaml:"host,omitempty" json:"host,omitempty"`
+	Path           string `yaml:"path,omitempty" json:"path,omitempty"`
+	Port           int    `yaml:"port,omitempty" json:"port,omitempty"`
+	ConnectTimeout int    `yaml:"connect_timeout,omitempty" json:"connect_timeout,omitempty"`
+	WriteTimeout   int    `yaml:"write_timeout,omitempty" json:"write_timeout,omitempty"`
+	ReadTimeout    int    `yaml:"read_timeout,omitempty" json:"read_timeout,omitempty"`
+	Retries        int    `yaml:"retries,omitempty" json:"retries,omitempty"`
 }
 
 // Services represents the response body returned from GET /services, a Kong API endpoint
@@ -67,8 +55,8 @@ type Routes struct {
 
 // Consumer represents the user credential for authentication to Kong
 type Consumer struct {
-	Username string `yaml:"username"`
-	CustomID string `yaml:"custom_id"`
+	Username string `json:"username" yaml:"username"`
+	CustomID string `json:"custom_id,omitempty" yaml:"custom_id"`
 }
 
 // Consumers represents the response body returned from GET /consumers, a Kong API endpoint

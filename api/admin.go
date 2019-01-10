@@ -130,6 +130,11 @@ func (c *Client) ApplyConfig() error {
 	if err := c.CreatePlugins(); err != nil {
 		return err
 	}
+
+	if err := c.CreateConsumers(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -158,6 +163,33 @@ func (c *Client) UpdateService(s Service) error {
 	}
 
 	fmt.Printf("[HTTP %d] Successfully created/updated service: %s \n", http.StatusOK, s.Name)
+
+	return nil
+}
+
+// CreateRoutes iterates through all available routes and creates for the associated service
+func (c *Client) CreateConsumers() error {
+	for _, r := range c.config.Consumers {
+		url := fmt.Sprintf("%s/consumers", c.BaseURL)
+
+		payload, err := json.Marshal(r)
+
+		if err != nil {
+			return err
+		}
+
+		res, err := c.httpRequest(http.MethodPost, url, payload, nil)
+
+		if err != nil {
+			return err
+		}
+
+		if res.StatusCode != http.StatusCreated {
+			return fmt.Errorf("[HTTP %d] Error creating consumer. Bad response from Kong API", res.StatusCode)
+		}
+
+		fmt.Printf("[HTTP %d] Consumer %s created\n", res.StatusCode, r.Username)
+	}
 
 	return nil
 }
