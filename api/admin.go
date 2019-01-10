@@ -258,25 +258,8 @@ func (c *Client) CreateRoutes() error {
 			return err
 		}
 
-		req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
-
-		if err != nil {
-			return err
-		}
-
-		req.Header.Set(contentType, applicationJSON)
-		req.Header.Set("User-Agent", "kongfig")
-
-		res, err := c.client.Do(req)
-
-		if err != nil {
-			return err
-		}
-
-		defer res.Body.Close()
-
 		route := Route{}
-		json.NewDecoder(res.Body).Decode(&route)
+		res, err := c.httpRequest(http.MethodPost, url, payload, &route)
 
 		// Mapping route names to route ids
 		// We do this so that we can create plugins for routes without having to
