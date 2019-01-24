@@ -37,6 +37,7 @@ type Service struct {
 	WriteTimeout   int    `yaml:"write_timeout,omitempty" json:"write_timeout,omitempty"`
 	ReadTimeout    int    `yaml:"read_timeout,omitempty" json:"read_timeout,omitempty"`
 	Retries        int    `yaml:"retries,omitempty" json:"retries,omitempty"`
+	Protocol       string `yaml:"protocol,omitempty" json:"protocol,omitempty"`
 }
 
 // Services represents the response body returned from GET /services, a Kong API endpoint
@@ -87,36 +88,15 @@ type Plugins struct {
 
 // Plugin represents a feature or middleware in Kong
 type Plugin struct {
-	ID       string       `yaml:"id,omitempty" json:"id,omitempty"`
-	Name     string       `yaml:"name,omitempty" json:"name,omitempty"`
-	Enabled  bool         `yaml:"enabled,omitempty" json:"enabled,omitempty"`
-	Services []string     `yaml:"services,omitempty" json:"-"`
-	Routes   []string     `yaml:"routes,omitempty" json:"-"`
-	Target   string       `yaml:"target,omitempty" json:"-"`
-	Config   PluginConfig `yaml:"config,omitempty" json:"config,omitempty"`
+	ID       string                 `yaml:"id,omitempty" json:"id,omitempty"`
+	Name     string                 `yaml:"name,omitempty" json:"name,omitempty"`
+	Enabled  bool                   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Services []string               `yaml:"services,omitempty" json:"-"`
+	Routes   []string               `yaml:"routes,omitempty" json:"-"`
+	Target   string                 `yaml:"target,omitempty" json:"-"`
+	Config   map[string]interface{} `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
-// PluginConfig represents the objects in config slive in the Plugin struct
-type PluginConfig struct {
-	ResponseCode        int    `yaml:"response_code,omitempty" json:"response_code,omitempty"`
-	RequestMethod       string `yaml:"request_method,omitempty" json:"request_method,omitempty"`
-	ValidateRequestBody bool   `yaml:"validate_request_body,omitempty" json:"validate_request_body,omitempty"`
-	ContentType         string `yaml:"content_type,omitempty" json:"content_type,omitempty"`
-	Credentials         bool   `yaml:"credentials,omitempty" json:"credentials,omitempty"`
-	Headers             string `yaml:"headers,omitempty" json:"headers,omitempty"`
-	Origins             string `yaml:"origins,omitempty" json:"origins,omitempty"`
-	Methods             string `yaml:"methods,omitempty" json:"methods,omitempty"`
-	ClaimsToVerify      string `yaml:"claims_to_verify,omitempty" json:"claims_to_verify,omitempty"`
-	URIParamNames       string `yaml:"uri_param_names,omitempty" json:"uri_param_names,omitempty"`
-	PreflightContinue   bool   `yaml:"preflight_continue,omitempty" json:"preflight_continue,omitempty"`
-	ExposedHeaders      string `yaml:"exposed_headers,omitempty" json:"exposed_headers,omitempty"`
-	MaxAge              string `yaml:"max_age,omitempty" json:"max_age,omitempty"`
-	Month               int    `yaml:"month,omitempty" json:"month,omitempty"`
-	Day                 int    `yaml:"day,omitempty" json:"day,omitempty"`
-	Hour                int    `yaml:"hour,omitempty" json:"hour,omitempty"`
-	Minute              int    `yaml:"minute,omitempty" json:"minute,omitempty"`
-	Second              int    `yaml:"second,omitempty" json:"second,omitempty"`
-	LimitBy             string `yaml:"limit_by,omitempty" json:"limit_by,omitempty"`
-	Policy              string `yaml:"policy,omitempty" json:"policy,omitempty"`
-	FaultTolerant       bool   `yaml:"fault_tolerant,omitempty" json:"fault_tolerant,omitempty"`
+type HeaderList struct {
+	Headers []string `yaml:"headers,omitempty" json:"headers,omitempty"`
 }

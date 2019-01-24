@@ -39,7 +39,10 @@ func (c *Client) httpRequest(method, url string, payload []byte, response interf
 		return &http.Response{}, err
 	}
 
-	req.Header.Set(contentType, applicationJSON, userAgent)
+	//payloadString := string(payload)
+	//fmt.Println(payloadString)
+	req.Header.Set(contentType, applicationJSON)
+	req.Header.Set("User-Agent", userAgent)
 
 	res, err := c.client.Do(req)
 
@@ -48,6 +51,11 @@ func (c *Client) httpRequest(method, url string, payload []byte, response interf
 	}
 
 	defer res.Body.Close()
+	//if res.StatusCode != http.StatusOK {
+	//bodyBytes, _ := ioutil.ReadAll(res.Body)
+	//bodyString := string(bodyBytes)
+	//fmt.Println(bodyString)
+	//}
 	json.NewDecoder(res.Body).Decode(&response)
 
 	return res, err
@@ -105,15 +113,15 @@ func (c *Client) ApplyConfig() error {
 		return err
 	}
 
+	if err := c.DeletePlugins(); err != nil {
+		return err
+	}
+
 	if err := c.DeleteRoutes(); err != nil {
 		return err
 	}
 
 	if err := c.DeleteServices(); err != nil {
-		return err
-	}
-
-	if err := c.DeletePlugins(); err != nil {
 		return err
 	}
 
