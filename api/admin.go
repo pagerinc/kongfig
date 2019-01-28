@@ -39,8 +39,6 @@ func (c *Client) httpRequest(method, url string, payload []byte, response interf
 		return &http.Response{}, err
 	}
 
-	//payloadString := string(payload)
-	//fmt.Println(payloadString)
 	req.Header.Set(contentType, applicationJSON)
 	req.Header.Set("User-Agent", userAgent)
 
@@ -51,11 +49,6 @@ func (c *Client) httpRequest(method, url string, payload []byte, response interf
 	}
 
 	defer res.Body.Close()
-	//if res.StatusCode != http.StatusOK {
-	//bodyBytes, _ := ioutil.ReadAll(res.Body)
-	//bodyString := string(bodyBytes)
-	//fmt.Println(bodyString)
-	//}
 	json.NewDecoder(res.Body).Decode(&response)
 
 	return res, err

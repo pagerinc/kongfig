@@ -16,7 +16,7 @@ type Config struct {
 type Route struct {
 	Name          string   `yaml:"name,omitempty" json:"-"`
 	ID            string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Service       string   `yaml:"service,omitempty" json:"service,omitempty"`
+	Service       string   `yaml:"apply_to,omitempty" json:"service,omitempty"`
 	Hosts         []string `yaml:"hosts,omitempty" json:"hosts,omitempty"`
 	Paths         []string `yaml:"paths,omitempty" json:"paths,omitempty"`
 	Methods       []string `yaml:"methods,omitempty" json:"methods,omitempty"`
