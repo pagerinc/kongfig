@@ -2,151 +2,24 @@ host: localhost:8001
 https: false
 version: "0.14.1"
 services:
-  - name: api-admin
+  - name: api
     url: http://${POD_NAMESPACE}.api-admin.${SVC_DOMAIN}
-  - name: api-command-center
-    url: http://${POD_NAMESPACE}.api-command-center.${SVC_DOMAIN}
-  - name: api-config
-    url: http://${POD_NAMESPACE}.api-config.${SVC_DOMAIN}
-  - name: api-core
-    url: http://${POD_NAMESPACE}.api-core.${SVC_DOMAIN}
-  - name: api-horizon
-    url: http://${POD_NAMESPACE}.api-horizon.${SVC_DOMAIN}
-  - name: api-messages
-    url: http://${POD_NAMESPACE}.api-messages.${SVC_DOMAIN}
-  - name: api-providers
-    url: http://${POD_NAMESPACE}.api-providers.${SVC_DOMAIN}
-  - name: api-scheduling
-    url: http://${POD_NAMESPACE}.api-scheduling.${SVC_DOMAIN}
-  - name: api-sdk
-    url: http://${POD_NAMESPACE}.api-sdk.${SVC_DOMAIN}
-  - name: api-twilio
-    url: http://${POD_NAMESPACE}.api-twilio.${SVC_DOMAIN}
-  - name: stash
-    url: http://${POD_NAMESPACE}.stash.${SVC_DOMAIN}
 
 routes:
   - name: api-admin-private
-    service: api-admin
-    hosts: ['${POD_NAMESPACE}.api-admin.${DOMAIN_NAME}']
-    paths: ["/auth"]
-  - name: api-admin-public
-    service: api-admin
-    paths: ["/poop"]
-  - name: api-command-center-private
-    service: api-command-center
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.api-config.${SVC_DOMAIN}
-  - name: api-core
-    service: api-scheduling
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.api-core.${SVC_DOMAIN}
-  - name: stash-private
-    service: stash
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.api-horizon.${SVC_DOMAIN}
-  - name: message-private
-    service: api-messages
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.api-messages.${SVC_DOMAIN}
-  - name: api-providers-private
-    service: api-providers
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.api-providers.${SVC_DOMAIN}
-  - name: api-scheduling
-    service: api-sdk
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.api-scheduling.${SVC_DOMAIN}
-  - name: api-sdk
-    service: api-sdk
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.api-sdk.${SVC_DOMAIN}
-  - name: api-twilio-private
-    service: api-twilio
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.api-twilio.${SVC_DOMAIN}
-  - name: api-config-private
-    service: api-config
-    paths: ["/auth"]
-    url: http://${POD_NAMESPACE}.stash.${SVC_DOMAIN}
-  - name: api-core-config
-    service: api-config
-    hosts: ['${POD_NAMESPACE}api.${DOMAIN_NAME}']
-    methods: ["GET"]
-    paths: ["/config"]
-    strip_path: true
-  - name: api-config-public
-    service: api-config
-    hosts: ['${POD_NAMESPACE}config.${DOMAIN_NAME}']
-    methods: ["GET"]
+    apply_to: api-admin
+    hosts: ['${POD_NAMESPACE}.api.${DOMAIN_NAME}']
+    paths: ["/getSomething"]
 
 plugins:
   - name: jwt
     enabled: true
-    routes: [api-admin-private,api-command-center-private,api-twilio-private,api-providers-private,stash-private,api-core-config]
+    routes: [api]
     config:
-      claims_to_verify: exp
-      uri_param_names: "jwt,token"
-  - name: jwt
-    enabled: true
-    services: [api-scheduling]
-    config:
-      claims_to_verify: exp
-      uri_param_names: "jwt,token"
-  - name: cors
-    enabled: true
-    services: [api-command-center]
-    config:
-      credentials: true
-      origins: https://${POD_NAMESPACE}command-center.${DOMAIN_NAME}
-      preflight_continue: false
-      exposed_headers: "Authorization,Armor-Session-Token"
-      headers: "Authorization,Accept,Accept-Version,Content-Length,Content-Type,Date,Client-Type"
-  - name: cors
-    enabled: true
-    services: [api-admin]
-    config:
-      credentials: true
-      origins: https://${POD_NAMESPACE}dashboard.${DOMAIN_NAME}
-      preflight_continue: false
-      exposed_headers: "Authorization,Armor-Session-Token"
-      headers: "Authorization,Accept,Accept-Version,Content-Length,Content-Type,Date,Client-Type"
-  - name: correlation-id
-    enabled: true
-    target: global
-    config:
-      echo_downstream: true
-      header_name: Pager-Request-ID
-      generator: uuid
-  - name: rate-limiting
-    enabled: true
-    target: global
-    config:
-      second: 20
-      minute: 100
-      hour: 1800
-  - name: request-size-limiting
-    enabled: true
-    target: global
-    config:
-      allowed_payload_size: 3
-  - name: prometheus
-    enabled: true
-    target: global
-
-  - name: cors
-    enabled: true
-    target: global
-    config:
-      credentials: false
-      preflight_continue: false
-      exposed_headers: "Authorization,Armor-Session-Token"
-      headers: "Authorization,Accept,Accept-Version,Content-Length,Content-Type,Date,Client-Type"
-
+      claims_to_verify: [exp]
+      uri_param_names: [jwt,token]
 consumers:
   - username: admin
-    custom_id: admin@pager.com
-  - username: fsilva
-    custom_id: fsilva@pager.com
+    custom_id: admin@user.com
 
 credentials: []
