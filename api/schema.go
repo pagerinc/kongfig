@@ -73,7 +73,7 @@ type Credential struct {
 	ID string `json:"id"`
 	Key string `json:"key"`
 	Secret string `json:"secret"`
-	Config map[string]interface{} `yaml:"config,omitempty" json:"-"`
+	Config map[string]interface{} `yaml:"config,omitempty"`
 }
 
 

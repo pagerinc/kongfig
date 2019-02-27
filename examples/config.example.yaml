@@ -19,6 +19,18 @@ plugins:
     config:
       claims_to_verify: [exp]
       uri_param_names: [jwt,token]
+
+  - name: oauth2
+    enabled: true
+    routes: [api-admin-private]
+    config:
+      scopes: [scheduling:providers_search,scheduling:appointments_read,scheduling:appointments_write]
+      mandatory_scope: true
+      global_credentials: true
+      enable_client_credentials: true
+      accept_http_if_already_terminated: true
+      token_expiration: 600
+
 consumers:
   - username: admin
     custom_id: admin@user.com
@@ -29,4 +41,12 @@ credentials:
     config:
       id: "bcbfb45d-e391-42bf-c2ed-94e32946753a"
       key: "a36c3049b36249a3c9f8891cb127243c"
-      secret: asd
+      secret: secret
+
+  - name: oauth2 # plugin name
+    target: admin # consumer username
+    config:
+      name: Test Application
+      client_id: THE-APP-KEY
+      client_secret: THE-APP-SECRET
+      redirect_uris: [https://redirect.me.com/]

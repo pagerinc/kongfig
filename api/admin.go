@@ -146,7 +146,7 @@ func (c *Client) ApplyConfig() error {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -549,13 +549,9 @@ func (c *Client) DeletePlugin(plugin Plugin) error {
 
 func (c *Client) CreateCredentials() error {
 	for _, r := range c.config.Credentials {
-		url := fmt.Sprintf("%s/consumers/%s/jwt", c.BaseURL, r.Target)
+		url := fmt.Sprintf("%s/consumers/%s/%s", c.BaseURL, r.Target, r.Name)
 
-		r.ID = r.Config["id"].(string)
-		r.Key = r.Config["key"].(string)
-		r.Secret = r.Config["secret"].(string)
-
-		payload, err := json.Marshal(r)
+		payload, err := json.Marshal(r.Config)
 
 		if err != nil {
 			return err
