@@ -104,8 +104,11 @@ func adminURL(c *Config) string {
 
 // ApplyConfig iterates through all services and updates config, deletes and recreates routes
 func (c *Client) ApplyConfig() error {
-	if err := c.DeleteConsumers(); err != nil {
-		return err
+
+	if len(c.config.Credentials) > 0 {
+		if err := c.DeleteConsumers(); err != nil { //Deleting consumers deletes credentials as well
+			return err
+		}
 	}
 
 	if err := c.DeletePlugins(); err != nil {
@@ -134,10 +137,16 @@ func (c *Client) ApplyConfig() error {
 		return err
 	}
 
-	if err := c.CreateConsumers(); err != nil {
-		return err
-	}
+	if len(c.config.Credentials) > 0 {
+		if err := c.CreateConsumers(); err != nil {
+			return err
+		}
 
+		if err := c.CreateCredentials(); err != nil {
+			return err
+		}
+	}
+	
 	return nil
 }
 
@@ -534,6 +543,37 @@ func (c *Client) DeletePlugin(plugin Plugin) error {
 	}
 
 	fmt.Printf("[HTTP %d] Plugin [%s] deleted \n", res.StatusCode, plugin.Name)
+
+	return nil
+}
+
+func (c *Client) CreateCredentials() error {
+	for _, r := range c.config.Credentials {
+		url := fmt.Sprintf("%s/consumers/%s/jwt", c.BaseURL, r.Target)
+
+		r.ID = r.Config["id"].(string)
+		r.Key = r.Config["key"].(string)
+		r.Secret = r.Config["secret"].(string)
+
+		payload, err := json.Marshal(r)
+
+		if err != nil {
+			return err
+		}
+
+		cred := Credential{}
+		res, err := c.httpRequest(http.MethodPost, url, payload, &cred)		
+
+		if res.StatusCode == http.StatusNotFound {
+			return fmt.Errorf("[HTTP %d] Error creating credential: Target not found", res.StatusCode)
+		}
+
+		if res.StatusCode != http.StatusCreated {
+			return fmt.Errorf("[HTTP %d] Error creating credential. Bad response from Kong API", res.StatusCode)
+		}
+
+		fmt.Printf("[HTTP %d] Credential created for Consumer %s \n", res.StatusCode, r.Target)
+	}
 
 	return nil
 }

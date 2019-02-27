@@ -22,7 +22,7 @@ services:
     command: kong migrations up
 
   kong:
-    image: kong:0.14.1-alpine
+    image: kong:0.15.0-alpine
     depends_on:
       - kong-database
       - kong-migration

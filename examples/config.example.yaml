@@ -2,19 +2,20 @@ host: localhost:8001
 https: false
 version: "0.14.1"
 services:
+
   - name: api
-    url: http://${POD_NAMESPACE}.api-admin.${SVC_DOMAIN}
+    url: http://api-admin.com
 
 routes:
   - name: api-admin-private
-    apply_to: api-admin
-    hosts: ['${POD_NAMESPACE}.api.${DOMAIN_NAME}']
+    apply_to: api
+    hosts: ["www.api.com"]
     paths: ["/getSomething"]
 
 plugins:
   - name: jwt
     enabled: true
-    routes: [api]
+    routes: [api-admin-private]
     config:
       claims_to_verify: [exp]
       uri_param_names: [jwt,token]
@@ -22,4 +23,10 @@ consumers:
   - username: admin
     custom_id: admin@user.com
 
-credentials: []
+credentials: 
+  - name: jwt # plugin name
+    target: admin # consumer username
+    config:
+      id: "bcbfb45d-e391-42bf-c2ed-94e32946753a"
+      key: "a36c3049b36249a3c9f8891cb127243c"
+      secret: asd

@@ -68,17 +68,14 @@ type Consumers struct {
 
 // Credential represents user
 type Credential struct {
-	Name   string           `yaml:"name"`
-	Target string           `yaml:"target"`
-	Config CredentialConfig `yaml:"config"`
+	Name   string           	  `yaml:"name" json:"-"`
+	Target string           	  `yaml:"target" json:"-"`
+	ID string `json:"id"`
+	Key string `json:"key"`
+	Secret string `json:"secret"`
+	Config map[string]interface{} `yaml:"config,omitempty" json:"-"`
 }
 
-// CredentialConfig represents the config object inside the Credential struct
-type CredentialConfig struct {
-	ID     string `yaml:"id"`
-	Key    string `yaml:"key"`
-	Secret string `yaml:"secret"`
-}
 
 // Plugins represents the response body of GET /plugins endpoint of Kong Admin API
 type Plugins struct {
