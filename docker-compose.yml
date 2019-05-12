@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   kong-database:
-    image: postgres:9.6-alpine
+    image: postgres:9.6-alpine@sha256:ac98c2d56aa8090977792988553d38a0f5d1f12d857082b99b24b0d8a2ddda5e
     environment:
       - POSTGRES_USER=kong
       - POSTGRES_DB=kong
@@ -13,7 +13,7 @@ services:
       retries: 5
 
   kong-migration:
-    image: kong:0.15.0-alpine
+    image: kong:0.15.0-alpine@sha256:04e996c95f7cf96dddb94fa51c0a68baa46c7a81c737bc20befe58a439d6d90a
     depends_on:
       - kong-database
     environment:
@@ -22,7 +22,7 @@ services:
     command: kong migrations up
 
   kong:
-    image: kong:0.15.0-alpine
+    image: kong:0.15.0-alpine@sha256:04e996c95f7cf96dddb94fa51c0a68baa46c7a81c737bc20befe58a439d6d90a
     depends_on:
       - kong-database
       - kong-migration
