@@ -13,7 +13,7 @@ services:
       retries: 5
 
   kong-migration:
-    image: kong:0.15.0-alpine@sha256:04e996c95f7cf96dddb94fa51c0a68baa46c7a81c737bc20befe58a439d6d90a
+    image: kong:1.1.2-alpine@sha256:488c2bfcc390aa8d461494deaf2438839be1090ea52dd12a4395f15391529463
     depends_on:
       - kong-database
     environment:
@@ -22,7 +22,7 @@ services:
     command: kong migrations up
 
   kong:
-    image: kong:0.15.0-alpine@sha256:04e996c95f7cf96dddb94fa51c0a68baa46c7a81c737bc20befe58a439d6d90a
+    image: kong:1.1.2-alpine@sha256:488c2bfcc390aa8d461494deaf2438839be1090ea52dd12a4395f15391529463
     depends_on:
       - kong-database
       - kong-migration
