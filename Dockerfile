@@ -4,7 +4,7 @@ WORKDIR /go/src/github.com/pagerinc/kongfig/
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOARM=6 go build -a -installsuffix cgo -ldflags '-w -s' -o kongfig
 
-FROM alpine:3.10@sha256:6a92cd1fcdc8d8cdec60f33dda4db2cb1fcdcacf3410a8e05b3741f44a9b5998
+FROM alpine:3.10@sha256:72c42ed48c3a2db31b7dafe17d275b634664a708d901ec9fd57b1529280f01fb
 
 COPY --from=0 /go/src/github.com/pagerinc/kongfig/kongfig /go/kongfig
 
