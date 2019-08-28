@@ -1,4 +1,4 @@
-FROM golang:1.12-stretch@sha256:44600a24dff9a70122d4446f63903a642e81c0422cd0d87249a8a5183ba5f926
+FROM golang:1.12-stretch@sha256:7735f0c8dcb6f99c93c5f8c6af492af4f6c75582e20008a8701473ed627fd316
 
 WORKDIR /go/src/github.com/pagerinc/kongfig/
 COPY . .
