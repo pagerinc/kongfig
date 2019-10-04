@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   kong-database:
-    image: postgres:11.5-alpine@sha256:d1218e487138ebec7f4a15b32ee3225dc97347139bbbf70a59603beded1ba878
+    image: postgres:12.0-alpine@sha256:85624fabf0e18f2bcd55c85823b6c0c987e67f2528dc2bdfacac86bdc81667c4
     environment:
       - POSTGRES_USER=kong
       - POSTGRES_DB=kong
